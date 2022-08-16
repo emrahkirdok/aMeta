@@ -17,7 +17,7 @@ checkpoint Create_Sample_TaxID_Directories:
         dir=lambda wildcards: f"results/AUTHENTICATION/{wildcards.sample}",
     shell:
         "mkdir -p {params.dir}; "
-        "while read taxid; do mkdir {params.dir}/$taxid; touch {params.dir}/$taxid/.done; done<{input.pathogens};"
+        "while read taxid; do mkdir -p {params.dir}/$taxid; touch {params.dir}/$taxid/.done; done<{input.pathogens};"
         "touch {output.done}"
 
 
@@ -177,7 +177,7 @@ rule PMD_scores:
     envmodules:
         *config["envmodules"]["malt"],
     shell:
-        "samtools view -h {input.bam} | pmdtools --number 100000 --printDS > {output.scores}"
+	"samtools view -h {input.bam} | python2 /proj/nobackup/metagenomics/code/PMDtools/pmdtools.0.60.py --number 100000 --printDS > {output.scores} || true"
 
 
 rule Authentication_Plots:
@@ -219,6 +219,6 @@ rule Deamination:
     envmodules:
         *config["envmodules"]["malt"],
     shell:
-        "samtools view {input.bam} | pmdtools --platypus > {output.tmp}; "
+	"samtools view {input.bam} | python2 /proj/nobackup/metagenomics/code/PMDtools/pmdtools.0.60.py --platypus > {output.tmp} || true;"
         "cd results/AUTHENTICATION/{wildcards.sample}/{wildcards.taxid}/{wildcards.refid}; "
         "R CMD BATCH $(which plotPMD); "
